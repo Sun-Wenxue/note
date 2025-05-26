@@ -88,6 +88,8 @@ ES6标准反引号可以换行
 
 指定区间，一个参数则默认到结束 s.subString()
 
+unicode str.charCodeAt(i)
+
 ### 1.3 数组
 
 长度 arr.length()
@@ -218,15 +220,25 @@ apply/call修复this指向
 
 装饰器：利用apply改变函数行为
 
+func.apply(对象, arguments)将其他对象的方法func应用到当前对象
+
+
+
 ### 2.4 高阶函数
 
 一个函数接收另一个函数作为参数
+
+```js
+function add(x, y, f) {
+    return f(x) + f(y);
+}
+```
 
 ##### 2.4.1 map/reduce
 
 映射
 
-arr.map(函数对象)
+arr.map(函数对象f)
 
 累积
 
@@ -242,11 +254,13 @@ arr.map(函数对象)
 
 ##### 2.4.3 sort
 
-把所有元素
+把所有元素转换为string再排序
 
-转换为string再排序
+是高阶函数，支持自定义排序l
 
-是高阶函数，支持自定义排序
+```
+arr.sort(f)
+```
 
 ##### 2.4.4 其他Array函数
 
@@ -262,10 +276,349 @@ forEach
 
 函数作为返回值
 
-返回函数最好不啊哟引用任何循环变量或者后续会发生变化的量
+```js
+function lazy_sum(arr) {
+    let sum = function () {
+        return arr.reduce(function (x, y) {
+            return x + y;
+        });
+    }
+    return sum;
+}
+
+let f = lazy_sum([1, 2, 3, 4, 5]);
+f();
+```
+
+返回函数最好不引用任何循环变量或者后续会发生变化的量
 
 一定要用嵌套一个绑定循环当前变量的函数
 
 或用let定义块级变量
 
 作用：封装私有变量
+
+### 2.6 箭头函数
+
+```js
+x => x*x;
+```
+
+```js
+(x,y) => {
+    if(x>0) return x*x+y*y;
+    else return -x*x-y*y*;
+}
+```
+
+相当于一个匿名函数
+
+可以修复方法的this指向问题（？）
+
+### 2.7 标签函数
+
+数据库调用，方便
+
+```js
+const email = "test@example.com";
+const password = 'hello123';
+
+function sql(strings, ...exps) {
+    console.log(`SQL: ${strings.join('?')}`);
+    console.log(`SQL parameters: ${JSON.stringify(exps)}`);
+    return {
+        name: '小明',
+        age: 20
+    };
+}
+
+const result = sql`SELECT * FROM users WHERE email=${email} AND password=${password}`;
+
+console.log(JSON.stringify(result));
+
+```
+
+### 2.8 生成器
+
+可以多次返回的函数
+
+```js
+function* fib(max) {
+    let
+        a = 0,
+        b = 1,
+        n = 0;
+    while (n < max) {
+        yield a;
+        [a, b] = [b, a + b];
+        n ++;
+    }
+    return;
+}
+
+for (let x of fib(10)) {
+    console.log(x); // 依次输出0, 1, 1, 2, 3, ...
+}
+```
+
+## 3 标准对象
+
+typeof 对象类型
+
+```js
+typeof 123; // 'number'
+typeof 123n; // 'bigint'
+typeof NaN; // 'number'
+typeof 'str'; // 'string'
+typeof true; // 'boolean'
+typeof undefined; // 'undefined'
+typeof Math.abs; // 'function'
+typeof null; // 'object'
+typeof []; // 'object'
+typeof {}; // 'object'
+
+```
+
+包装对象
+
+```js
+let n = new Number(123); // 123,生成了新的包装类型
+let b = new Boolean(true); // true,生成了新的包装类型
+let s = new String('str'); // 'str',生成了新的包装类型
+```
+
+闲的蛋疼也不要使用包装对象
+
+### 3.1 Date
+
+```js
+let now = new Date();
+now; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+now.getFullYear(); // 2015, 年份
+now.getMonth(); // 5, 月份，注意月份范围是0~11，5表示六月
+now.getDate(); // 24, 表示24号
+now.getDay(); // 3, 表示星期三
+now.getHours(); // 19, 24小时制
+now.getMinutes(); // 49, 分钟
+now.getSeconds(); // 22, 秒
+now.getMilliseconds(); // 875, 毫秒数
+now.getTime(); // 1435146562875, 以number形式表示的时间戳
+
+let d = new Date(2015, 5, 19, 20, 15, 30, 123);
+console.log(d); // Fri Jun 19 2015 20:15:30 GMT+0800 (CST)
+
+let d = Date.parse('2015-06-24T19:49:22.875+08:00');
+console.log(d); // 1435146562875
+
+let d = new Date(1435146562875);
+d; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+d.getMonth(); // 5
+
+let d = new Date(1435146562875);
+d.toLocaleString(); // '2015/6/24 下午7:49:22'，本地时间（北京时区+8:00），显示的字符串与操作系统设定的格式有关
+d.toUTCString(); // 'Wed, 24 Jun 2015 11:49:22 GMT'，UTC时间，与本地时间相差8小时
+```
+
+## 3.2 RegExp
+
+\d数字 \w字母 *任意字符 +至少一个字符 ?0或1个字符 {n}n个字符 {n,m}n-m个字符
+
+[0-9a-zA-Z\_]数字，字母或下划线
+
+A|B A或B
+
+^行的开头 $行的结束
+
+
+
+构造正则表达式
+
+```
+let re1 = /ABC\-001/;
+let re2 = new RegExp('ABC\\-001');
+
+re1; // /ABC\-001/
+re2; // /ABC\-001/
+```
+
+切分字符串.split()
+
+分组.exec()
+
+贪婪匹配默认，非贪婪匹配?
+
+全局搜索
+
+### 3.3 JSON
+
+数据交换格式
+
+## 4 面向对象编程
+
+通过原型实现面向对象
+
+```js
+obj._proto_ = obj;
+obj = Object.create(obj);
+```
+
+### 4.1 创建对象
+
+构造函数+new
+
+```js
+function Student(name) {
+    this.name = name;
+    this.hello = function () {
+        alert('Hello, ' + this.name + '!');
+    }
+}
+
+let xiaoming = new Student('小明');
+xiaoming.name; // '小明'
+xiaoming.hello(); // Hello, 小明!
+```
+
+共享原型函数
+
+```js
+function Student(name) {
+    this.name = name;
+}
+
+Student.prototype.hello = function () {
+    alert('Hello, ' + this.name + '!');
+};
+```
+
+### 4.2 原型继承
+
+call
+
+需要空函数
+
+### 4.3 class继承
+
+比原型继承简单
+
+```js
+class Student {
+    constructor(name) {
+        this.name = name;
+    }
+
+    hello() {
+        alert('Hello, ' + this.name + '!');
+    }
+}
+
+class PrimaryStudent extends Student {
+    constructor(name, grade) {
+        super(name); // 记得用super调用父类的构造方法!
+        this.grade = grade;
+    }
+
+    myGrade() {
+        alert('I am at grade ' + this.grade);
+    }
+}
+```
+
+## 5 浏览器
+
+### 5.1 浏览器对象
+
+window 浏览器窗口
+
+navigator 浏览器的信息
+
+screen 屏幕的信息
+
+location 页面URL信息
+
+```js
+location.protocol; // 'http'
+location.host; // 'www.example.com'
+location.port; // '8080'
+location.pathname; // '/path/index.html'
+location.search; // '?a=1&b=2'
+location.hash; // 'TOP'
+```
+
+document 当前页面 DOM树的根节点
+
+`getElementById()`和`getElementsByTagName()`可以按ID获得一个DOM节点和按Tag名称获得一组DOM节点：
+
+history 浏览器的历史记录
+
+### 5.2 操作DOM
+
+HTML文档被浏览器解析为DOM树，通过JS改变DOM树结构
+
+更新，遍历，添加，删除
+
+### 5.3 操作表单
+
+获取值
+
+设置值
+
+提交表单
+
+### 5.4 操作文件
+
+```
+<input type="file">
+```
+
+### 5.5 AJAX
+
+执行异步网络请求，通过回调函数获得响应
+
+Fetch API
+
+### 5.6 Promise
+
+承诺将来会执行的对象
+
+### 5.7 asynch函数
+
+asynch function
+
+内部用await
+
+异步，和promise一样
+
+### 5.8 Canvas
+
+绘制图表和动画
+
+## 6 错误处理
+
+当代码块被try { ... }包裹的时候，就表示这部分代码执行过程中可能会发生错误，一旦发生错误，就不再继续执行后续代码，转而跳到catch块。catch (e) { ... }包裹的代码就是错误处理代码，变量e表示捕获到的错误。最后，无论有没有错误，finally一定会被执行。
+
+```js
+try {
+    ...
+} catch (e) {
+    ...
+} finally {
+    ...
+}
+```
+
+抛出错误
+
+```js
+throw new Error('输入错误');
+```
+
+### 6.1 错误传播
+
+没有捕获的错误会被抛到外层调用函数
+
+### 6.2 异步错误处理
+
+代码总是单线程执行
+
+异步错误无法在调用时捕获
