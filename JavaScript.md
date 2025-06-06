@@ -114,6 +114,10 @@ unicode str.charCodeAt(i)
 
 多维数组[[1,2,3], [4,5,6]]
 
+创建指定大小 Array(length)
+
+用同一个值填充arr.fill(val)
+
 ### 1.4 对象
 
 var/let name = {key1: value1, key2: value2};
@@ -439,7 +443,11 @@ let re2 = new RegExp('ABC\\-001');
 
 re1; // /ABC\-001/
 re2; // /ABC\-001/
+
+re.test(' '); 检查是否匹配
 ```
+
+
 
 切分字符串.split()
 
@@ -490,6 +498,50 @@ Student.prototype.hello = function () {
     alert('Hello, ' + this.name + '!');
 };
 ```
+
+Getter和Setter
+
+```JS
+let user = {
+  name: "John",
+  surname: "Smith"
+};
+
+Object.defineProperty(user, 'fullName', {
+  get() {
+    return `${this.name} ${this.surname}`;
+  },
+
+  set(value) {
+    [this.name, this.surname] = value.split(" ");
+  }
+});
+```
+
+
+
+```JS
+let user = {
+  get name() {
+    return this._name;
+  },
+
+  set name(value) {
+    if (value.length < 4) {
+      alert("Name is too short, need at least 4 characters");
+      return;
+    }
+    this._name = value;
+  }
+};
+
+user.name = "Pete";
+alert(user.name); // Pete
+
+user.name = ""; // Name 太短了……
+```
+
+
 
 ### 4.2 原型继承
 
@@ -615,10 +667,82 @@ throw new Error('输入错误');
 
 ### 6.1 错误传播
 
-没有捕获的错误会被抛到外层调用函数
+没有捕获的错误会被抛到外层调用函数。
 
 ### 6.2 异步错误处理
 
 代码总是单线程执行
 
 异步错误无法在调用时捕获
+
+## 7 DOM事件
+
+### 7.1 DOM 0级事件
+
+```
+el.onclick = function(){}
+// 例
+var btn = document.getElementById('btn');
+    btn.onclick = function(){
+        alert(this.innerHTML)
+    }
+```
+
+同一个元素不能绑定多个同类型事件。
+
+DOM0事件绑定给元素的事件行为绑定方法，这些方法在当前元素事件行为的冒泡阶段或者目标阶段执行
+
+## 8 常用函数
+
+Math.random()
+
+Math.ceil/floor(num)
+
+iterator.every(x=>x>10)检查元素是否都满足某个条件
+
+## 9 其它补充
+
+### Proxy
+
+内置对象，用于创建一个对象的代理，从而可以**拦截并自定义该对象的基本操作**（如属性查找、赋值、枚举、函数调用等）。
+
+核心概念：
+
+代理（Proxy）：包装目标对象的新对象，拦截对目标对象的操作。
+处理程序（Handler）：定义拦截行为的对象，包含多个 “陷阱”（trap）方法。
+陷阱（Trap）：拦截特定操作的方法（如 get、set、has 等）。
+
+基本语法：
+
+```JS
+const proxy = new Proxy(target, handler);
+```
+
+- **`target`**：被代理的原始对象。
+- **`handler`**：包含陷阱方法的对象，用于自定义操作行为。
+
+常用方法：
+
+| 陷阱方法                             | 拦截的操作                           |
+| ------------------------------------ | ------------------------------------ |
+| `get(target, prop, receiver)`        | 读取属性值（如 `obj.key`）           |
+| `set(target, prop, value, receiver)` | 设置属性值（如 `obj.key = value`）   |
+| `has(target, prop)`                  | 判断属性是否存在（如 `key in obj`）  |
+| `deleteProperty(target, prop)`       | 删除属性（如 `delete obj.key`）      |
+| `ownKeys(target)`                    | 获取所有属性名（如 `Object.keys()`） |
+| `apply(target, thisArg, args)`       | 调用函数（如 `func()`）              |
+| `construct(target, args)`            | 使用 `new` 实例化对象                |
+
+### Object.defineProperty
+
+确控制对象属性的底层方法。它允许你直接为对象添加或修改属性，并精确配置这些属性的行为（如可读写性、可枚举性、可配置性等）。
+
+基本语法
+
+```
+Object.defineProperty(obj, prop, descriptor);
+```
+
+- **`obj`**：需要定义属性的目标对象。
+- **`prop`**：需要定义或修改的属性名称（字符串或 Symbol）。
+- **`descriptor`**：属性描述符对象，定义属性的配置。
